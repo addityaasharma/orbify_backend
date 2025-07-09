@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const panelSchema = new mongoose.Schema({
-    details: [{ type: mongoose.Schema.Types.ObjectId, ref: 'details' }],
+    websites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Website' }],
 }, { timestamps: true })
 
 export const AdminPanel = mongoose.model('AdminPanel', panelSchema)
