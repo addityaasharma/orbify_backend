@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt'
 import { AdminPanel } from "../model/adminPanelSchema.js";
 import { sendOTP, generateOTP } from '../config/otpGen.js';
 import { redisClient } from "../config/redis.js";
-
+import jwt from 'jsonwebtoken'
 
 
 export const adminSignupOTP = async (req, res) => {
