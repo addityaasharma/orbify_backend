@@ -18,6 +18,6 @@ app.use('/', websiteRouter)
 //server
 server()
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`App is running on port - http://localhost:${PORT}`)
 })
