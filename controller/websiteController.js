@@ -6,7 +6,11 @@ import { AdminPanel } from "../model/adminPanelSchema.js";
 
 export const addWebsite = async (req, res) => {
     const userID = req.user;
-    const { name, domain, status } = req.body;
+    console.log(userID)
+    let { name, domain, status } = req.body;
+
+    name = name?.trim();
+    domain = domain?.trim();
 
     if (!name || !domain) {
         return res.status(400).json({
@@ -15,7 +19,7 @@ export const addWebsite = async (req, res) => {
         });
     }
 
-    const domainRegex = /^(https?:\/\/)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\/.*)?$/;
+    const domainRegex = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}\/?$/;
     if (!domainRegex.test(domain)) {
         return res.status(400).json({
             status: "error",
@@ -39,8 +43,8 @@ export const addWebsite = async (req, res) => {
             });
         }
 
-        const checkWeb = await Website.findOne({ domain });
-        if (checkWeb) {
+        const existingWebsite = await Website.findOne({ domain });
+        if (existingWebsite) {
             return res.status(400).json({
                 status: "error",
                 message: "Website with this domain already exists",
@@ -88,33 +92,36 @@ export const addWebsite = async (req, res) => {
 
 export const getWebsite = async (req, res) => {
     const userID = req.user;
+
     if (!userID) {
-        return res.status(404).json({
+        return res.status(401).json({
             status: "error",
             message: "Unauthorized",
         });
     }
 
     try {
-        const admin = Admin.findById(userID);
+        const admin = await Admin.findById(userID);
+
         if (!admin) {
-            return res.status(403).json({ status: "error", message: "Unauthorized" });
+            return res.status(403).json({
+                status: "error",
+                message: "Admin not found or unauthorized",
+            });
         }
 
-        const adminpanel = await AdminPanel.findById(admin.panelData).populate(
-            "websites"
-        );
+        const adminPanel = await AdminPanel.findById(admin.panelData).populate("websites");
 
-        if (!adminpanel) {
+        if (!adminPanel) {
             return res.status(404).json({
                 status: "error",
-                message: "No admin panel found for this user",
+                message: "Admin panel not found",
             });
         }
 
         return res.status(200).json({
             status: "success",
-            websites: adminpanel.websites,
+            websites: adminPanel.websites,
         });
     } catch (error) {
         return res.status(500).json({
