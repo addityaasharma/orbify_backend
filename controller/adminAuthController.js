@@ -35,6 +35,7 @@ export const adminSignupOTP = async (req, res) => {
             panelDataID: adminPanelData._id,
             otp: otpResult.otp
         }))
+        console.log(cache)
 
         return res.status(200).json({
             message: "OTP sent to email. Please verify within 2 minutes.",
@@ -51,28 +52,54 @@ export const adminSignupOTP = async (req, res) => {
 
 export const adminCompleteSignUp = async (req, res) => {
     const { email, otp } = req.body;
-    if (!otp || !email) {
-        return res.status(401).json({
-            message: "No otp or email found"
-        })
-    }
-    try {
-        const cacheKey = `admin_signup_otp:${email}`
-        const cachedData = await redisClient.getEx(cacheKey);
 
+    if (!email || !otp) {
+        return res.status(400).json({
+            status: "error",
+            message: "Email and OTP are required"
+        });
+    }
+
+    try {
+        const cacheKey = `admin_signup_otp:${email}`;
+        const cachedData = await redisClient.get(cacheKey);
+        
         if (!cachedData) {
             return res.status(410).json({
                 status: "error",
-                message: "OTP expired",
-            })
+                message: "OTP expired or not found",
+            });
         }
 
-        const { username, password, panelDataID, otp: storedOTP } = JSON.parse(cachedData)
+        let parsedData;
+        try {
+            parsedData = JSON.parse(cachedData);
+            console.log("Parsed data:", parsedData);
+            if (
+                typeof parsedData !== 'object' ||
+                parsedData === null ||
+                !('otp' in parsedData)
+            ) {
+                return res.status(500).json({
+                    status: "error",
+                    message: "Invalid or corrupted OTP data"
+                });
+            }
+
+        } catch (parseError) {
+            return res.status(500).json({
+                status: "error",
+                message: "Failed to parse OTP data",
+                error: parseError.message
+            });
+        }
+
+        const { username, password, panelDataID, otp: storedOTP } = parsedData;
 
         if (storedOTP !== otp) {
             return res.status(401).json({
                 status: "error",
-                message: "Invalid OTP",
+                message: "Invalid OTP"
             });
         }
 
@@ -80,13 +107,13 @@ export const adminCompleteSignUp = async (req, res) => {
         if (existingAdmin) {
             return res.status(409).json({
                 status: "error",
-                message: "Admin already exists",
+                message: "Admin already exists"
             });
         }
 
         const newAdmin = await Admin.create({
             email,
-            name: username,
+            username,
             password,
             panelData: panelDataID,
         });
@@ -99,18 +126,18 @@ export const adminCompleteSignUp = async (req, res) => {
             data: {
                 id: newAdmin._id,
                 email: newAdmin.email,
-                name: newAdmin.name,
-            },
+                name: newAdmin.name
+            }
         });
 
     } catch (error) {
         return res.status(500).json({
+            status: "error",
             message: "Internal Server Error",
-            error: error.message,
-        })
+            error: error.message
+        });
     }
-}
-
+};
 
 export const adminLogin = async (req, res) => {
     const { email, password } = req.body;
