@@ -74,7 +74,6 @@ export const adminCompleteSignUp = async (req, res) => {
         let parsedData;
         try {
             parsedData = JSON.parse(cachedData);
-            console.log("Parsed data:", parsedData);
             if (
                 typeof parsedData !== 'object' ||
                 parsedData === null ||
