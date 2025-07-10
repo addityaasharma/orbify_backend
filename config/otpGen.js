@@ -18,7 +18,7 @@ export const sendOTP = async (toEmail, username = '') => {
     });
 
     const mailOptions = {
-        from: `"Your App Name" <${process.env.EMAIL_USER}>`,
+        from: `"Orbify" <${process.env.EMAIL_USER}>`,
         to: toEmail,
         subject: 'Verify Your Email - OTP Code',
         html: `
