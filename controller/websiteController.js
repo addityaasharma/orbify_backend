@@ -2,7 +2,7 @@ import crypto from "crypto";
 import { Admin } from "../model/admin/adminSchema.js";
 import { Website } from "../model/website/webauth/websiteSchema.js";
 import { AdminPanel } from "../model/admin/adminPanelSchema.js";
-import { WebsitePanel } from '../model/website/webauth/websitePanelSchema.js'
+import { WebsitePanel } from '../model/website/websitePanelSchema.js'
 import { Blog } from '../model/website/webcontent/blogSchema.js'
 import { Banner } from '../model/website/webcontent/bannerSchema.js'
 import { Category } from '../model/website/webcontent/categorySchema.js'
@@ -149,7 +149,7 @@ export const getAllWebsite = async (req, res) => {
 export const getFullWebsiteData = async (req, res) => {
     const userID = req.user;
     const { webId } = req.params;
-    console.log(webId)
+
     if (!userID) {
         return res.status(403).json({
             status: "error",
