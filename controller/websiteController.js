@@ -1,12 +1,15 @@
 import crypto from "crypto";
-import { Admin } from "../model/adminSchema.js";
-import { Website } from "../model/websiteSchema.js";
-import { AdminPanel } from "../model/adminPanelSchema.js";
+import { Admin } from "../model/admin/adminSchema.js";
+import { Website } from "../model/website/webauth/websiteSchema.js";
+import { AdminPanel } from "../model/admin/adminPanelSchema.js";
+import { WebsitePanel } from '../model/website/webauth/websitePanelSchema.js'
+import { Blog } from '../model/website/webcontent/blogSchema.js'
+import { Banner } from '../model/website/webcontent/bannerSchema.js'
+import { Category } from '../model/website/webcontent/categorySchema.js'
 
 
 export const addWebsite = async (req, res) => {
     const userID = req.user;
-    console.log(userID)
     let { name, domain, status } = req.body;
 
     name = name?.trim();
@@ -54,6 +57,12 @@ export const addWebsite = async (req, res) => {
         const token = crypto.randomBytes(32).toString("hex");
         const healthURL = `${domain.replace(/\/$/, "")}/health`;
 
+        const websitePanel = await WebsitePanel.create({
+            website: null,
+            settings: {},
+            customCode: {}
+        });
+
         const newWebsite = await Website.create({
             owner: admin._id,
             name,
@@ -61,8 +70,12 @@ export const addWebsite = async (req, res) => {
             token,
             healthCheckURL: healthURL,
             status: status || "active",
+            webPanel: websitePanel._id,
             adminPanel: admin.panelData,
         });
+
+        websitePanel.website = newWebsite._id;
+        await websitePanel.save();
 
         await AdminPanel.findByIdAndUpdate(admin.panelData, {
             $push: { websites: newWebsite._id },
@@ -90,7 +103,7 @@ export const addWebsite = async (req, res) => {
 };
 
 
-export const getWebsite = async (req, res) => {
+export const getAllWebsite = async (req, res) => {
     const userID = req.user;
 
     if (!userID) {
@@ -123,6 +136,68 @@ export const getWebsite = async (req, res) => {
             status: "success",
             websites: adminPanel.websites,
         });
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: "Internal Server Error",
+            error: error.message,
+        });
+    }
+};
+
+
+export const getFullWebsiteData = async (req, res) => {
+    const userID = req.user;
+    const { webId } = req.params;
+    console.log(webId)
+    if (!userID) {
+        return res.status(403).json({
+            status: "error",
+            message: "Unauthorized"
+        });
+    }
+
+    try {
+        const admin = await Admin.findById(userID);
+        if (!admin) {
+            return res.status(409).json({
+                status: "error",
+                message: "Unauthorized"
+            });
+        }
+
+        const website = await Website.findById(webId).populate("webPanel");
+        console.log(webId)
+        if (!website) {
+            return res.status(401).json({
+                status: "error",
+                message: "No website found or website is inactive",
+            });
+        }
+
+        const panelId = website.webPanel?._id;
+        if (!panelId) {
+            return res.status(200).json({
+                status: "error",
+                message: "No panel data found for this website"
+            });
+        }
+
+        const [blogs, categories, banners] = await Promise.all([
+            Blog.find({ panel: panelId }),
+            Category.find({ panel: panelId }),
+            Banner.find({ panel: panelId })
+        ]);
+
+        return res.status(200).json({
+            status: "success",
+            website,
+            panel: website.webPanel,
+            blogs,
+            categories,
+            banners
+        });
+
     } catch (error) {
         return res.status(500).json({
             status: "error",

@@ -1,6 +1,6 @@
-import { Admin } from "../model/adminSchema.js";
+import { Admin } from "../model/admin/adminSchema.js";
 import bcrypt from 'bcrypt'
-import { AdminPanel } from "../model/adminPanelSchema.js";
+import { AdminPanel } from "../model/admin/adminPanelSchema.js";
 import { sendOTP, generateOTP } from '../config/otpGen.js';
 import { redisClient } from "../config/redis.js";
 import jwt from 'jsonwebtoken'
