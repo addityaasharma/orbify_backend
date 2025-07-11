@@ -55,14 +55,68 @@ export const addBlogs = async (req, res) => {
 }
 
 
+export const updateBlog = async (req, res) => {
+    const userID = req.user;
+    const { blogId } = req.params;
+    const { name, description, content, panelId, category } = req.body;
+
+    try {
+        const admin = await Admin.findById(userID);
+        if (!admin) {
+            return res.status(403).json({
+                status: "error",
+                message: "Unauthorized",
+            });
+        }
+
+        const blog = await Blog.findById(blogId);
+        if (!blog) {
+            return res.status(404).json({
+                status: "error",
+                message: "Blog not found",
+            });
+        }
+
+        if (name) {
+            blog.name = name;
+            blog.metaURL = generateSlug(name);
+        }
+        if (description) blog.description = description;
+        if (content) blog.content = content;
+        if (panelId) blog.panel = panelId;
+        if (category) blog.category = category;
+
+        if (req.files && req.files.length > 0) {
+            const newImages = req.files.map(file => `/uploads/blogs/${file.filename}`);
+            blog.images = newImages;
+        }
+
+        await blog.save();
+
+        return res.status(200).json({
+            status: "success",
+            message: "Blog updated successfully",
+            blog,
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: "Internal Server Error",
+            error: error.message,
+        });
+    }
+};
+
+
 export const addBanner = async (req, res) => {
     const userID = req.user;
-    const { title, panelId, link, links } = req.body;
+    const { title, panelId, link } = req.body;
 
-    if (!title || !panelId) {
+    if (!title || !panelId || !link) {
         return res.status(400).json({
             status: "error",
-            message: "Please provide title and panelId",
+            message: "Please provide title, panelId, and link",
         });
     }
 
@@ -75,41 +129,27 @@ export const addBanner = async (req, res) => {
             });
         }
 
-        const images = req.files?.map((file) => `/uploads/blogs/${file.filename}`) || [];
-
-        let createdBanners = [];
-
-        if (images.length === 1) {
-            const singleLink = Array.isArray(links) ? links[0] : link;
-            const banner = await Banner.create({
-                panel: panelId,
-                title,
-                image: images[0],
-                link: singleLink || "",
-            });
-            createdBanners.push(banner);
-        } else if (images.length > 1 && Array.isArray(links) && links.length === images.length) {
-            for (let i = 0; i < images.length; i++) {
-                const banner = await Banner.create({
-                    panel: panelId,
-                    title,
-                    image: images[i],
-                    link: links[i] || "",
-                });
-                createdBanners.push(banner);
-            }
-        } else {
+        const image = req.file?.filename;
+        if (!image) {
             return res.status(400).json({
                 status: "error",
-                message: "Number of images and links must match for multiple banners",
+                message: "Please upload one banner image",
             });
         }
 
+        const banner = await Banner.create({
+            panel: panelId,
+            title,
+            image: `/uploads/blogs/${image}`,
+            link,
+        });
+
         return res.status(201).json({
             status: "success",
-            message: "Banner(s) created successfully",
-            banners: createdBanners,
+            message: "Banner created successfully",
+            banner,
         });
+
     } catch (error) {
         return res.status(500).json({
             status: "error",

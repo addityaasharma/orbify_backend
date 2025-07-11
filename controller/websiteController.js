@@ -57,12 +57,6 @@ export const addWebsite = async (req, res) => {
         const token = crypto.randomBytes(32).toString("hex");
         const healthURL = `${domain.replace(/\/$/, "")}/health`;
 
-        const websitePanel = await WebsitePanel.create({
-            website: null,
-            settings: {},
-            customCode: {}
-        });
-
         const newWebsite = await Website.create({
             owner: admin._id,
             name,
@@ -70,12 +64,17 @@ export const addWebsite = async (req, res) => {
             token,
             healthCheckURL: healthURL,
             status: status || "active",
-            webPanel: websitePanel._id,
             adminPanel: admin.panelData,
         });
 
-        websitePanel.website = newWebsite._id;
-        await websitePanel.save();
+        const websitePanel = await WebsitePanel.create({
+            website: newWebsite._id,
+            settings: {},
+            customCode: {},
+        });
+
+        newWebsite.webPanel = websitePanel._id;
+        await newWebsite.save();
 
         await AdminPanel.findByIdAndUpdate(admin.panelData, {
             $push: { websites: newWebsite._id },
@@ -167,7 +166,6 @@ export const getFullWebsiteData = async (req, res) => {
         }
 
         const website = await Website.findById(webId).populate("webPanel");
-        console.log(webId)
         if (!website) {
             return res.status(401).json({
                 status: "error",
