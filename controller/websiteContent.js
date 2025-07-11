@@ -54,7 +54,6 @@ export const addBlogs = async (req, res) => {
     }
 }
 
-
 export const updateBlog = async (req, res) => {
     const userID = req.user;
     const { blogId } = req.params;
@@ -108,7 +107,52 @@ export const updateBlog = async (req, res) => {
     }
 };
 
+export const deleteBlog = async (req, res) => {
+    const userID = req.user;
+    const { blogId } = req.params;
 
+    if (!userID) {
+        return res.status(403).json({
+            status: "error",
+            message: "Unauthorized",
+        });
+    }
+
+    try {
+        const admin = await Admin.findById(userID);
+        if (!admin) {
+            return res.status(403).json({
+                status: "error",
+                message: "Admin not found",
+            });
+        }
+
+        const blog = await Blog.findById(blogId);
+        if (!blog) {
+            return res.status(404).json({
+                status: "error",
+                message: "Blog not found",
+            });
+        }
+
+        await blog.deleteOne();
+
+        return res.status(200).json({
+            status: "success",
+            message: "Blog deleted successfully",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: "Internal Server Error",
+            error: error.message,
+        });
+    }
+};
+
+
+
+// banner section
 export const addBanner = async (req, res) => {
     const userID = req.user;
     const { title, panelId, link } = req.body;
@@ -159,7 +203,52 @@ export const addBanner = async (req, res) => {
     }
 };
 
+export const deleteBanner = async (req, res) => {
+    const userID = req.user;
+    const { bannerId } = req.params;
 
+    if (!userID) {
+        return res.status(403).json({
+            status: "error",
+            message: "Unauthorized",
+        });
+    }
+
+    try {
+        const admin = await Admin.findById(userID);
+        if (!admin) {
+            return res.status(403).json({
+                status: "error",
+                message: "Admin not found",
+            });
+        }
+
+        const banner = await Banner.findById(bannerId);
+        if (!banner) {
+            return res.status(404).json({
+                status: "error",
+                message: "Banner not found",
+            });
+        }
+
+        await banner.deleteOne();
+
+        return res.status(200).json({
+            status: "success",
+            message: "Banner deleted successfully",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: "Internal Server Error",
+            error: error.message,
+        });
+    }
+};
+
+
+
+// category section
 export const addCategory = async (req, res) => {
     const { name, panelId } = req.body;
     const userID = req.user;
