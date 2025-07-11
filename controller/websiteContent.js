@@ -6,6 +6,7 @@ import { generateSlug } from '../config/slugGenerator.js'
 import { Category } from "../model/website/webcontent/categorySchema.js";
 
 
+// blog section
 export const addBlogs = async (req, res) => {
     const { name, description, content, panelId, category } = req.body;
     const userID = req.user;
@@ -191,6 +192,52 @@ export const addBanner = async (req, res) => {
         return res.status(201).json({
             status: "success",
             message: "Banner created successfully",
+            banner,
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: "Internal Server Error",
+            error: error.message,
+        });
+    }
+};
+
+export const editBanner = async (req, res) => {
+    const userID = req.user;
+    const { bannerId } = req.params;
+    const { title, link, panelId } = req.body;
+
+    try {
+        const admin = await Admin.findById(userID);
+        if (!admin) {
+            return res.status(403).json({
+                status: "error",
+                message: "Unauthorized",
+            });
+        }
+
+        const banner = await Banner.findById(bannerId);
+        if (!banner) {
+            return res.status(404).json({
+                status: "error",
+                message: "Banner not found",
+            });
+        }
+
+        if (title) banner.title = title;
+        if (link) banner.link = link;
+        if (panelId) banner.panel = panelId;
+        if (req.file) {
+            banner.image = `/uploads/blogs/${req.file.filename}`;
+        }
+
+        await banner.save();
+
+        return res.status(200).json({
+            status: "success",
+            message: "Banner updated successfully",
             banner,
         });
 
