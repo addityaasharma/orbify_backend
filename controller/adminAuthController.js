@@ -38,7 +38,7 @@ export const adminSignupOTP = async (req, res) => {
         console.log(cache)
 
         return res.status(200).json({
-            status : "success",
+            status: "success",
             message: "OTP sent to email. Please verify within 2 minutes.",
         });
     } catch (error) {
@@ -64,7 +64,7 @@ export const adminCompleteSignUp = async (req, res) => {
     try {
         const cacheKey = `admin_signup_otp:${email}`;
         const cachedData = await redisClient.get(cacheKey);
-        
+
         if (!cachedData) {
             return res.status(410).json({
                 status: "error",
