@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { Admin } from "../model/admin/adminSchema.js";
 import { Blog } from "../model/website/webcontent/blogSchema.js";
 import { Banner } from '../model/website/webcontent/bannerSchema.js'
@@ -330,6 +329,97 @@ export const addCategory = async (req, res) => {
             status: "success",
             message: "Category created successfully",
             category,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: "Internal Server Error",
+            error: error.message,
+        });
+    }
+};
+
+export const editCategory = async (req, res) => {
+    const { name, panelId } = req.body;
+    const { id } = req.params;
+    const userID = req.user;
+
+    if (!name || !panelId) {
+        return res.status(400).json({
+            status: "error",
+            message: "Name and panelId are required",
+        });
+    }
+
+    try {
+        const admin = await Admin.findById(userID);
+        if (!admin) {
+            return res.status(403).json({
+                status: "error",
+                message: "Unauthorized",
+            });
+        }
+
+        const logo = req.file ? `/uploads/blogs/${req.file.filename}` : undefined;
+        const slug = generateSlug(name);
+
+        const updatedCategory = await Category.findByIdAndUpdate(
+            id,
+            {
+                name,
+                panel: panelId,
+                ...(logo && { logo }),
+                slug,
+            },
+            { new: true }
+        );
+
+        if (!updatedCategory) {
+            return res.status(404).json({
+                status: "error",
+                message: "Category not found",
+            });
+        }
+
+        return res.status(200).json({
+            status: "success",
+            message: "Category updated successfully",
+            category: updatedCategory,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: "Internal Server Error",
+            error: error.message,
+        });
+    }
+};
+
+export const deleteCategory = async (req, res) => {
+    const { id } = req.params;
+    const userID = req.user;
+
+    try {
+        const admin = await Admin.findById(userID);
+        if (!admin) {
+            return res.status(403).json({
+                status: "error",
+                message: "Unauthorized",
+            });
+        }
+
+        const deletedCategory = await Category.findByIdAndDelete(id);
+
+        if (!deletedCategory) {
+            return res.status(404).json({
+                status: "error",
+                message: "Category not found",
+            });
+        }
+
+        return res.status(200).json({
+            status: "success",
+            message: "Category deleted successfully",
         });
     } catch (error) {
         return res.status(500).json({

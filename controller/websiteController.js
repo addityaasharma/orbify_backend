@@ -148,6 +148,7 @@ export const getAllWebsite = async (req, res) => {
 export const getFullWebsiteData = async (req, res) => {
     const userID = req.user;
     const { webId } = req.params;
+    const { page = 1, limit = 10, search = "", filter = "all" } = req.query;
 
     if (!userID) {
         return res.status(403).json({
@@ -181,19 +182,51 @@ export const getFullWebsiteData = async (req, res) => {
             });
         }
 
-        const [blogs, categories, banners] = await Promise.all([
-            Blog.find({ panel: panelId }),
-            Category.find({ panel: panelId }),
-            Banner.find({ panel: panelId })
-        ]);
+        const skip = (page - 1) * limit;
+        const regexSearch = new RegExp(search, "i"); // case-insensitive regex
+
+        const results = {};
+
+        if (filter === "all" || filter === "blogs") {
+            const blogQuery = { panel: panelId };
+            if (search) blogQuery.title = regexSearch;
+
+            const blogs = await Blog.find(blogQuery).skip(skip).limit(Number(limit));
+            const totalBlogs = await Blog.countDocuments(blogQuery);
+
+            results.blogs = blogs;
+            results.blogsCount = totalBlogs;
+        }
+
+        if (filter === "all" || filter === "categories") {
+            const catQuery = { panel: panelId };
+            if (search) catQuery.name = regexSearch;
+
+            const categories = await Category.find(catQuery).skip(skip).limit(Number(limit));
+            const totalCategories = await Category.countDocuments(catQuery);
+
+            results.categories = categories;
+            results.categoriesCount = totalCategories;
+        }
+
+        if (filter === "all" || filter === "banners") {
+            const bannerQuery = { panel: panelId };
+            if (search) bannerQuery.title = regexSearch;
+
+            const banners = await Banner.find(bannerQuery).skip(skip).limit(Number(limit));
+            const totalBanners = await Banner.countDocuments(bannerQuery);
+
+            results.banners = banners;
+            results.bannersCount = totalBanners;
+        }
 
         return res.status(200).json({
             status: "success",
             website,
             panel: website.webPanel,
-            blogs,
-            categories,
-            banners
+            page: Number(page),
+            limit: Number(limit),
+            ...results
         });
 
     } catch (error) {
