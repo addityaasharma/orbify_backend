@@ -38,6 +38,7 @@ export const adminSignupOTP = async (req, res) => {
         console.log(cache)
 
         return res.status(200).json({
+            status : "success",
             message: "OTP sent to email. Please verify within 2 minutes.",
         });
     } catch (error) {
