@@ -1,4 +1,4 @@
-import {Website} from '../../model/website/webauth/websiteSchema.js'
+import { Website } from '../../model/website/webauth/websiteSchema.js'
 import { Blog } from '../../model/website/webcontent/blogSchema.js';
 import { Banner } from '../../model/website/webcontent/bannerSchema.js';
 import { Category } from '../../model/website/webcontent/categorySchema.js';
