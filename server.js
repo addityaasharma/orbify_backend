@@ -6,12 +6,13 @@ import authRouter from './router/authRouter.js'
 import websiteRouter from './router/websiteRouter.js'
 import userview_router from './router/user_view_router/userview_routes.js'
 import webContent from './router/webContent.js'
+import { dynamicCorsMiddleware } from './config/db.js'
 
 dotenv.config()
 const PORT = process.env.PORT
 
 const app = express()
-app.use(cors())
+app.use(cors(dynamicCorsMiddleware))
 
 app.use(express.json())
 
