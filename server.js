@@ -21,7 +21,7 @@ app.use('/', websiteRouter)
 app.use('/content', webContent)
 
 //user_routes
-app.use('/user', userview_router)
+app.use('/public', userview_router)
 
 //server
 server()
