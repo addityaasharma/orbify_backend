@@ -7,12 +7,18 @@ import websiteRouter from './router/websiteRouter.js'
 import userview_router from './router/user_view_router/userview_routes.js'
 import webContent from './router/webContent.js'
 import { dynamicCorsMiddleware } from './config/db.js'
+import path from 'path';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+
 
 dotenv.config()
 const PORT = process.env.PORT
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express()
 app.use(cors(dynamicCorsMiddleware))
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(express.json())
 

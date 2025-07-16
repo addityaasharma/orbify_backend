@@ -5,6 +5,7 @@ import { generateSlug } from '../config/slugGenerator.js'
 import { Category } from "../model/website/webcontent/categorySchema.js";
 
 
+
 // blog section
 export const addBlogs = async (req, res) => {
     const { name, description, content, panelId, category } = req.body;
