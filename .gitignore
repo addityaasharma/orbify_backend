@@ -18,8 +18,11 @@ pids
 .env
 .env.*  # e.g., .env.production, .env.local
 
-# Directory for uploaded files (if you're storing them locally)
-public/uploads/
+# Directory for uploaded files (ignore all EXCEPT .gitkeep)
+public/uploads/*
+!public/uploads/.gitkeep
+public/uploads/blogs/*
+!public/uploads/blogs/.gitkeep
 
 # OS files
 .DS_Store
