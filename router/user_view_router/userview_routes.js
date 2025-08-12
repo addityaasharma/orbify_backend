@@ -3,6 +3,7 @@ import { userBanners, userBlogs, userCategories } from "../../controller/user_vi
 
 const publicRouter = express.Router()
 
+publicRouter.get('/blogs/:id', userBlogs)
 publicRouter.get('/blogs', userBlogs)
 publicRouter.get('/banners', userBanners)
 publicRouter.get('/categories', userCategories)

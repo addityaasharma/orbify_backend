@@ -5,7 +5,8 @@ import { Category } from '../../model/website/webcontent/categorySchema.js';
 
 
 export const userBlogs = async (req, res) => {
-    const { token, id, search } = req.query;
+    const { token, search } = req.query;
+    const id = req.params.id || req.query.id;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
 
@@ -18,13 +19,6 @@ export const userBlogs = async (req, res) => {
 
     try {
         const website = await Website.findOne({ token }).populate("webPanel");
-
-        // if (!website || website.status !== "active") {
-        //     return res.status(404).json({
-        //         status: "error",
-        //         message: "Website not found or inactive"
-        //     });
-        // }
 
         const panelId = website.webPanel?._id;
         if (!panelId) {
