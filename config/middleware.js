@@ -15,7 +15,6 @@ export const middleware = async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         req.user = decoded.userID
-
         next();
     } catch (err) {
         console.error('JWT auth error:', err);
