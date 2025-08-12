@@ -15,7 +15,8 @@ export const server = () => {
 
 const dashboardOrigins = [
     'https://dashboard.orbify.com',
-    'http://localhost:3000'
+    'http://localhost:3000',
+    'http://localhost:5173',
 ];
 
 export const dynamicCorsMiddleware = async (req, callback) => {
