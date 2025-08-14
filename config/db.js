@@ -17,7 +17,8 @@ const dashboardOrigins = [
     'https://dashboard.orbify.com',
     'http://localhost:3000',
     'http://localhost:5173',
-    'https://blog-one-29va.onrender.com'
+    'https://blog-one-29va.onrender.com',
+    'https://multitenantsystem.onrender.com'
 ];
 
 export const dynamicCorsMiddleware = async (req, callback) => {
