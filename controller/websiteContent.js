@@ -3,7 +3,7 @@ import { Blog } from "../model/website/webcontent/blogSchema.js";
 import { Banner } from '../model/website/webcontent/bannerSchema.js'
 import { generateSlug } from '../config/slugGenerator.js'
 import { Category } from "../model/website/webcontent/categorySchema.js";
-
+import { WebsitePanel } from "../model/website/websitePanelSchema.js";
 
 
 // blog section
@@ -54,6 +54,40 @@ export const addBlogs = async (req, res) => {
         })
     }
 }
+
+
+export const addBlogToAllPanels = async (req, res) => {
+    try {
+        const { name, description, metaURL, category, images, content } = req.body;
+
+        const panels = await WebsitePanel.find({}, "_id");
+
+        if (!panels.length) {
+            return res.status(404).json({ message: "No website panels found" });
+        }
+
+        const blogs = panels.map(panel => ({
+            panel: panel._id,
+            name,
+            description,
+            metaURL,
+            category,
+            images,
+            content
+        }));
+
+        const savedBlogs = await Blog.insertMany(blogs);
+
+        res.status(201).json({
+            message: "Blog added to all websites successfully",
+            count: savedBlogs.length,
+            blogs: savedBlogs
+        });
+    } catch (error) {
+        console.error("Error adding blog to all websites:", error);
+        res.status(500).json({ message: "Server error", error });
+    }
+};
 
 export const updateBlog = async (req, res) => {
     const userID = req.user;

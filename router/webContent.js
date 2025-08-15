@@ -1,6 +1,6 @@
 import express from "express";
 import { middleware } from '../config/middleware.js'
-import { addBanner, addBlogs, addCategory, deleteBanner, deleteBlog, deleteCategory, editBanner, editCategory, updateBlog } from "../controller/websiteContent.js";
+import { addBanner, addBlogs, addCategory, deleteBanner, deleteBlog, deleteCategory, editBanner, editCategory, updateBlog, addBlogToAllPanels } from "../controller/websiteContent.js";
 import { upload } from "../config/multer.js";
 
 const router = express.Router()
@@ -8,6 +8,7 @@ const router = express.Router()
 
 // blogs section
 router.post('/blog', middleware, upload.array("images", 5), addBlogs)
+router.post("/blogs/all", middleware, upload.array("images"), addBlogToAllPanels);
 router.put('/blog/:blogId', middleware, upload.array('images'), updateBlog);
 router.delete('/blog/:blogId', middleware, deleteBlog)
 
